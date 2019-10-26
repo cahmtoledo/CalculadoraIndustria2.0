@@ -30,7 +30,7 @@ class Funcionario:
     pass
     
 class Rules: #New Rules
-    def __init__ (self, date, entradaIdeal, saidaIdeal, TempoDeAlmoço,TotalDeAdicional, ehFeriado=False, meioperiodo=False):    
+    def __init__ (self, date, entradaIdeal, saidaIdeal, TempoDeAlmoço,TotalDeAdicional, ehFeriado=False, meioperiodo=False, ehFolga=False):    
         self.date = date
         self.entradaIdeal=entradaIdeal
         self.saidaIdeal=saidaIdeal
@@ -38,6 +38,7 @@ class Rules: #New Rules
         self.TotalDeAdicional=TotalDeAdicional
         self.ehFeriado = ehFeriado
         self.meioperiodo = meioperiodo
+        self.ehFolga = ehFolga
         pass
    
     pass
@@ -158,8 +159,8 @@ def preenchendoDados (Func, Regra):
         if (entradaIdeal == 'FERIADO'):
             dia = Dias(Data, row, entrada1, saida1, entrada2, saida2) 
             regra = Rules(Data, entradaIdeal, saidaIdeal, TempoDeAlmoço, horarioDoAdicional, True)
-        elif (entradaIdeal == 'FOLGA' or entradaIdeal=='ATESTADO' or entradaIdeal=='FÉRIAS' or entrada1 == 'ATESTADO'):        
-            regra = Rules(Data, entradaIdeal, saidaIdeal, TempoDeAlmoço, horarioDoAdicional, True)
+        elif (entradaIdeal == 'FOLGA' or entradaIdeal=='ATESTADO' or entradaIdeal=='FÉRIAS' or entrada1 == 'ATESTADO' or entrada1=='FOLGA' or entrada1 == 'FÉRIAS'):        
+            regra = Rules(Data, entradaIdeal, saidaIdeal, TempoDeAlmoço, horarioDoAdicional, ehFolga=True)
             dia = Dias(Data, row, entrada1, saida1, entrada2, saida2)
             if (Data.weekday() == 6):
                 alldomingos = False
@@ -183,7 +184,7 @@ def preenchendoDados (Func, Regra):
             if(regra.ehFeriado is False):
                 diaI=regra
         if(semana[Data.weekday()] is None and NovoOuCopia):
-            if(regra.ehFeriado is False):
+            if(regra.ehFeriado is False and regra.ehFolga is False):
                 semana.update({Data.weekday():regra})
         row += 1
         ContadorDias +=1
@@ -195,6 +196,14 @@ def preenchendoDados (Func, Regra):
             if isinstance(funcionario.Dias[i].entrada1, int) or isinstance(funcionario.Dias[i].entrada2, int):
                 temp = -ConvertToTime(funcionario.Dias[i].entrada1)+ConvertToTime(funcionario.Dias[i].saida1) - ConvertToTime(funcionario.Dias[i].entrada2) + ConvertToTime(funcionario.Dias[i].saida2)
                 funcionario.HoraExtraCem+=temp
+    #Caso seja folga
+        elif (funcionario.Regras[i].ehFolga):
+            if isinstance(funcionario.Dias[i].entrada1, int) or isinstance(funcionario.Dias[i].entrada2, int):
+                    temp = -ConvertToTime(funcionario.Dias[i].entrada1)+ConvertToTime(funcionario.Dias[i].saida1) - ConvertToTime(funcionario.Dias[i].entrada2) + ConvertToTime(funcionario.Dias[i].saida2)
+                    if(dia.date.weekday()==6):
+                        funcionario.HoraExtraCem+=temp
+                    else:
+                        funcionario.TotalAdianto+=temp
         #Caso tenha faltado
         elif (funcionario.Dias[i].ehFalta):
             funcionario.TotalFaltas+=1
