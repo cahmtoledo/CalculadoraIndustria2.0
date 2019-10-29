@@ -191,26 +191,41 @@ def preenchendoDados (Func, Regra):
 
     ##############Calculo da hora extra e atrasos etc ###################################
     for i in funcionario.Dias:
+        dia = funcionario.Dias[i]
     #Caso seja feriado
         if (funcionario.Regras[i].ehFeriado):
             if isinstance(funcionario.Dias[i].entrada1, int) or isinstance(funcionario.Dias[i].entrada2, int):
-                temp = -ConvertToTime(funcionario.Dias[i].entrada1)+ConvertToTime(funcionario.Dias[i].saida1) - ConvertToTime(funcionario.Dias[i].entrada2) + ConvertToTime(funcionario.Dias[i].saida2)
+                saida2=dia.saida2
+                saida1=dia.saida1
+                if (saida2!=None and saida2<500):
+                    saida2+=2400
+                if (saida1!=None and saida1<500):
+                    saida1+=2400
+                temp = -ConvertToTime(funcionario.Dias[i].entrada1)+ConvertToTime(saida1) - ConvertToTime(funcionario.Dias[i].entrada2) + ConvertToTime(saida2)
                 funcionario.HoraExtraCem+=temp
     #Caso seja folga
         elif (funcionario.Regras[i].ehFolga):
             if isinstance(funcionario.Dias[i].entrada1, int) or isinstance(funcionario.Dias[i].entrada2, int):
-                    temp = -ConvertToTime(funcionario.Dias[i].entrada1)+ConvertToTime(funcionario.Dias[i].saida1) - ConvertToTime(funcionario.Dias[i].entrada2) + ConvertToTime(funcionario.Dias[i].saida2)
-                    if(dia.date.weekday()==6):
-                        funcionario.HoraExtraCem+=temp
-                    else:
-                        funcionario.TotalAdianto+=temp
+                #print(funcionario.Dias[i].date)
+                saida2=dia.saida2
+                saida1=dia.saida1
+                if (saida2!=None and saida2<500):
+                    saida2+=2400
+                    print(ConvertToTime(saida2))
+                if (saida1!=None and saida1<500):
+                    saida1+=2400
+                temp = -ConvertToTime(funcionario.Dias[i].entrada1)+ConvertToTime(saida1) - ConvertToTime(funcionario.Dias[i].entrada2) + ConvertToTime(saida2)
+                if(dia.date.weekday()==6):
+                    funcionario.HoraExtraCem+=temp
+                else:
+                    funcionario.TotalAdianto+=temp
         #Caso tenha faltado
         elif (funcionario.Dias[i].ehFalta):
             funcionario.TotalFaltas+=1
     #Caso contrário
         else:
             regra = funcionario.Regras[i]
-            dia = funcionario.Dias[i]
+            
             #verificando meio-periodo
             if (dia.entrada1 is None and dia.saida1 is None):
                 dia.entrada1=dia.entrada2
