@@ -367,7 +367,7 @@ def main():
     print ("Digite o nome do arquivo")
     Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
     nome = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-    print(nome)
+    print(nome[:len(nome)-5])
     wb = xl.load_workbook(filename = nome, keep_vba = True, read_only = False)
     ws = {}
     FullfillFeriados(wb["CAPA"])
@@ -383,7 +383,7 @@ def main():
     for Func in ws:
         preenchendoDados(wb[Func], wb[ws[Func]])
     print("Salvando o arquivo, por favor não feche o programa\n*sujeito a corromper arquivo*")
-    wb.save(nome)
+    wb.save(nome[:len(nome)-5] + "PRENCHIDO.xlsm")
     print ("Operation Sucefull ocurred")
     
     
