@@ -49,7 +49,7 @@ informadas nas regras. Caso haja falta informar aqui, mas deixar normal o quadro
 -Após indicar a planilha o programa lerá essa planilha indentificando os Funcionários
 por começarem com Func e as regras por começarem com Regra.
 
--Tenha se certificado que para cada Funcionário exita uma Regra.
+-Tenha se certificado que para cada Funcionário exista uma Regra.
 
 -Certifique-se que planilha esteja fechada
 
@@ -64,6 +64,4 @@ corromper de forma irrecuperável o arquivo
 
 ----------------------------------------------------------------------------------
 
-Caso haja algum problema ou dúvida contate em:
 
-(12)997503220 ou cmtoledo@usp.br
