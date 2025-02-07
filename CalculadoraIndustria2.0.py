@@ -17,20 +17,22 @@ class Dias:
 
    
 class Funcionario:
-    def __init__ (self, name):
+    def __init__ (self, name, pagaExtra = True):
         self.name = name
         self.Dias = {}
         self.Regras = {}
         self.HoraExtraCem = 0 #Total referente a hora extra 100% do salário
         self.TotalFaltas = 0 #Total de dias que o funcionario faltou
         self.TotalAtraso = 0 #Tempo total que ele chegou atrasado
-        self.TotalAdianto = 0 #Tempo total que le chegou adiantado
+        self.TotalAdianto = 0 #Tempo total que ele chegou adiantado
+        self.TotalAdiantoExtra = 0 #Tempo total que ele chegou adiantado além de 2 horas
         self.TotalDeAdicional = 0 #Total de Adicional noturno
+        self.pagaExtra = pagaExtra
         pass
     pass
     
 class Rules: #New Rules
-    def __init__ (self, date, entradaIdeal, saidaIdeal, TempoDeAlmoço,TotalDeAdicional, ehFeriado=False, meioperiodo=False, ehFolga=False):    
+    def __init__ (self, date, entradaIdeal, saidaIdeal, TempoDeAlmoço,TotalDeAdicional, ehFeriado=False, meioperiodo=False, ehFolga=False, recebeExtra=False):    
         self.date = date
         self.entradaIdeal=entradaIdeal
         self.saidaIdeal=saidaIdeal
@@ -38,6 +40,7 @@ class Rules: #New Rules
         self.TotalDeAdicional=TotalDeAdicional
         self.ehFeriado = ehFeriado
         self.meioperiodo = meioperiodo
+        self.recebeExtra = recebeExtra
         self.ehFolga = ehFolga
         pass
    
@@ -83,8 +86,9 @@ def preenchendoDados (Func, Regra):
     Data_row = 0  #linha onde começam as datas, começa para valer em Data_row+1
     Data_column = 0 #Coluna onde começam as datas, começa para valer em Data_column+1
     #define o nome da tabela que é o nome do funcionario, 4 primeiras letras sao Func
-    funcionario = Funcionario(Func.title[4:])
-    print (funcionario.name)    
+    recebeExtra = Func.cell(row=4,column=11).value != None
+    funcionario = Funcionario(Func.title[4:], recebeExtra)
+    print (funcionario.name, " Recebe 75% = ", funcionario.pagaExtra)    
     #Procura o inicio da tabela pelo nome Data###############################
     FindedData1 = False
     for column in range (1,Func.max_column):
@@ -238,6 +242,9 @@ def preenchendoDados (Func, Regra):
                 elif (temp<-5/1440):
                     if(dia.date.weekday()==6):
                         funcionario.HoraExtraCem-=temp
+                    elif(temp < -120/1440 and funcionario.pagaExtra):
+                        funcionario.TotalAdianto+=120/1440
+                        funcionario.TotalAdiantoExtra-=(temp + 120/1440)
                     else:
                         funcionario.TotalAdianto-=temp
                 else:
@@ -251,6 +258,9 @@ def preenchendoDados (Func, Regra):
                 if (temp>5/1440):
                     if(dia.date.weekday()==6):
                         funcionario.HoraExtraCem+=temp
+                    if (temp>120/1440):
+                        funcionario.TotalAdianto+=120/1440
+                        funcionario.TotalAdiantoExtra+=(temp - 120/1440)
                     else:
                         funcionario.TotalAdianto+=temp
                 elif (temp<-5/1440):
@@ -278,6 +288,9 @@ def preenchendoDados (Func, Regra):
                 elif (temp<-5/1440):
                     if(dia.date.weekday()==6):
                         funcionario.HoraExtraCem-=temp
+                    elif(temp < -120/1440):
+                        funcionario.TotalAdianto+=120/1440
+                        funcionario.TotalAdiantoExtra-=(temp+120/1440)
                     else:
                         funcionario.TotalAdianto-=temp
                 else:
@@ -293,6 +306,9 @@ def preenchendoDados (Func, Regra):
                     if (temp>5/1440):
                         if(dia.date.weekday()==6):
                             funcionario.HoraExtraCem+=temp
+                        elif(temp>120/1440 and funcionario.pagaExtra):
+                            funcionario.TotalAdianto+=120/1440
+                            funcionario.TotalAdiantoExtra+=(temp - 120/1440)
                         else:
                             funcionario.TotalAdianto+=temp
                     elif (temp<-5/1440):
@@ -310,6 +326,9 @@ def preenchendoDados (Func, Regra):
                     if (temp>5/1440):
                         if(dia.date.weekday()==6):
                             funcionario.HoraExtraCem+=temp
+                        elif (temp>120/1440 and funcionario.pagaExtra):
+                            funcionario.TotalAdianto+=120/1440
+                            funcionario.TotalAdiantoExtra+=(temp - 120/1440)
                         else:
                             funcionario.TotalAdianto+=temp
                     elif (temp<-5/1440):
@@ -324,6 +343,9 @@ def preenchendoDados (Func, Regra):
                     elif (temp<-5/1440):
                         if(dia.date.weekday()==6):
                             funcionario.HoraExtraCem-=temp
+                        elif (temp<-120/1440 and funcionario.pagaExtra):
+                            funcionario.TotalAdianto+=120/1440
+                            funcionario.TotalAdiantoExtra-=(temp+120/1440)
                         else:
                             funcionario.TotalAdianto-=temp
                     else:
@@ -340,24 +362,27 @@ def preenchendoDados (Func, Regra):
                     funcionario.TotalDeAdicional+=temp
                     Func.cell(row=dia.row, column=Data_column+9, value = ConvertToNumber(temp))
     #Printar Resultados
-    Func.cell(row =46, column = 5, value = funcionario.name)
-    Func.cell(row=46, column = 6, value = "Extra 70%")
+    Func.cell(row =46, column = 4, value = funcionario.name)
+    Func.cell(row=46, column = 5, value = "Extra 70%")
+    Func.cell(row=46, column = 6, value = "Extra 75%")
     Func.cell(row=46, column = 7, value = "Atrasos")
     Func.cell(row=46, column = 8, value = "Adc. Noturno")
-    Func.cell(row=46, column = 10, value = "Faltas")
-    Func.cell(row=47, column = 5, value = "Horário normal")
-    Func.cell(row=48, column = 5, value = "Horário em h")
     Func.cell(row=46, column =9, value = "Extra 100%")
+    Func.cell(row=46, column = 10, value = "Faltas")
     Func.cell(row=46, column =11, value = "Domingo Mês")
-    Func.cell(row=47, column = 6, value = ConvertToNumber(funcionario.TotalAdianto))
+    Func.cell(row=47, column = 4, value = "Horário normal")
+    Func.cell(row=48, column = 4, value = "Horário em h")
+    Func.cell(row=47, column = 5, value = ConvertToNumber(funcionario.TotalAdianto))
+    Func.cell(row=47, column = 6, value = ConvertToNumber(funcionario.TotalAdiantoExtra)) #
     Func.cell(row=47, column = 7, value = ConvertToNumber(funcionario.TotalAtraso))
     Func.cell(row=47, column = 8, value = ConvertToNumber(funcionario.TotalDeAdicional))
-    Func.cell(row=47, column = 10, value = funcionario.TotalFaltas)
     Func.cell(row=47, column =9, value = ConvertToNumber(funcionario.HoraExtraCem))
+    Func.cell(row=47, column = 10, value = funcionario.TotalFaltas)
     if (alldomingos==True):Func.cell(row=47, column =11, value = "Paga")
     else: Func.cell(row=47, column =11, value = "Não Paga")                                   
-    Func.cell(row=48, column = 6, value = "Tempo em horas")
-    Func.cell(row=48, column = 6, value = (funcionario.TotalAdianto)*24)
+    Func.cell(row=48, column = 4, value = "Tempo em horas")
+    Func.cell(row=48, column = 5, value = (funcionario.TotalAdianto)*24)
+    Func.cell(row=48, column = 6, value = (funcionario.TotalAdiantoExtra)*24)
     Func.cell(row=48, column = 7, value = (funcionario.TotalAtraso)*24)
     Func.cell(row=48, column = 8, value = (funcionario.TotalDeAdicional)*24*60/52.5)
     Func.cell(row=48, column =9, value = (funcionario.HoraExtraCem)*24)
